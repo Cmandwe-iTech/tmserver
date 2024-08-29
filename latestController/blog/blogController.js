@@ -1,24 +1,31 @@
-import blogModel from '../../latestModel/blogs/blogPageModel.js'; // adjust the path as necessary
+import blogModel from '../../latestModel/blogs/blogPageModel.js';
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
-    console.log(filePath, "filepath");
-    const result = await cloudinary.v2.uploader.upload(filePath);
-    fs.unlinkSync(filePath);
-    return result.secure_url;
+    try {
+        const result = await cloudinary.v2.uploader.upload(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
+        return result.secure_url;
+    } catch (error) {
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
+    }
 };
 
-// Create a new blog
 export const createBlog = async (req, res) => {
     try {
         const { category, blogTitle, readTime, date, views, blogCardData, headerData, articleData } = req.body;
 
-        // Handle file uploads if any
         const handleFileUploads = async (fileKey, targetObject, propertyToUpdate) => {
             if (req.files && req.files[fileKey]) {
-                const file = req.files[fileKey][0]; // assuming single file upload
+                const file = req.files[fileKey][0];
                 const imageUrl = await uploadToCloudinary(file.path);
                 targetObject[propertyToUpdate] = imageUrl;
             }
@@ -50,7 +57,6 @@ export const createBlog = async (req, res) => {
     }
 };
 
-// Get all blogs
 export const getBlogs = async (req, res) => {
     try {
         const blogs = await blogModel.find();
@@ -60,7 +66,6 @@ export const getBlogs = async (req, res) => {
     }
 };
 
-// Get a blog by ID
 export const getBlogById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -72,7 +77,6 @@ export const getBlogById = async (req, res) => {
     }
 };
 
-// Get a blog by ID
 export const getBlogByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -83,55 +87,40 @@ export const getBlogByCategory = async (req, res) => {
     }
 };
 
-// Delete a blog by ID
 export const deleteBlog = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Find the document by ID
         const blog = await blogModel.findById(id);
-
-        // If document does not exist, return 404
         if (!blog) return res.status(404).json({ message: 'Blog not found' });
-
-        // Delete the document
         await blogModel.findByIdAndDelete(id);
-
         res.status(200).json({ message: 'Blog deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting blog', error: error.message });
     }
 };
 
-// Edit an existing blog
 export const editBlog = async (req, res) => {
     try {
         const { id } = req.params;
         const { category, blogTitle, readTime, date, views, blogCardData, headerData, articleData } = req.body;
-
-        // Find the existing blog
         const existingBlog = await blogModel.findById(id);
         if (!existingBlog) return res.status(404).json({ message: 'Blog not found' });
 
-        // Handle file uploads if any
         const handleFileUploads = async (fileKey, targetObject, propertyToUpdate) => {
             if (req.files && req.files[fileKey]) {
-                const file = req.files[fileKey][0]; // assuming single file upload
+                const file = req.files[fileKey][0];
                 const imageUrl = await uploadToCloudinary(file.path);
                 targetObject[propertyToUpdate] = imageUrl;
             }
         };
 
-        // Parse the provided data if necessary
         let parseBlogCardData = blogCardData ? JSON.parse(blogCardData) : existingBlog.blogCardData;
         let parseHeaderData = headerData ? JSON.parse(headerData) : existingBlog.headerData;
         let parseArticleData = articleData ? JSON.parse(articleData) : existingBlog.articleData;
 
-        // Handle file uploads for cardImage and headerBgImage
         await handleFileUploads('cardImage', parseBlogCardData, 'cardImage');
         await handleFileUploads('headerBgImage', parseHeaderData, 'headerBgImage');
 
-        // Update only the provided fields
         const updatedBlog = {
             category: category || existingBlog.category,
             blogTitle: blogTitle || existingBlog.blogTitle,
@@ -142,8 +131,7 @@ export const editBlog = async (req, res) => {
             headerData: parseHeaderData,
             articleData: parseArticleData
         };
-
-        // Save the updated blog
+        
         const result = await blogModel.findByIdAndUpdate(id, updatedBlog, { new: true });
         res.status(200).json({ message: 'Blog updated successfully', result });
     } catch (error) {

@@ -2,14 +2,20 @@ import practionersModel from '../../latestModel/practioners/practionersModel.js'
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
     }
 };
 
@@ -47,8 +53,6 @@ export const createPractionersData = async (req, res) => {
     }
 };
 
-
-// Get all practioners data
 export const getPractionersData = async (req, res) => {
     try {
         const pages = await practionersModel.find().sort({ createdAt: -1 });
@@ -58,7 +62,6 @@ export const getPractionersData = async (req, res) => {
     }
 };
 
-// Delete practioners data by ID
 export const deletePractionersDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -70,7 +73,6 @@ export const deletePractionersDataById = async (req, res) => {
     }
 };
 
-// Get practioners data by category
 export const getPractionersDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -87,7 +89,6 @@ export const editPractionersData = async (req, res) => {
         const { id } = req.params;
         const { category, mentorName, jobRole, companyName } = req.body;
 
-        // Prepare data for updating
         const updatedData = {
             category,
             mentorName,
@@ -95,7 +96,6 @@ export const editPractionersData = async (req, res) => {
             companyName
         };
 
-        // Handle file uploads if present
         if (req.files) {
             if (req.files.profilePic) {
                 const profilePicUrl = await uploadToCloudinary(req.files.profilePic[0].path);
@@ -107,11 +107,10 @@ export const editPractionersData = async (req, res) => {
             }
         }
 
-        // Update the practitioner data
         const updatedPractitioner = await practionersModel.findByIdAndUpdate(
             id,
             updatedData,
-            { new: true } // Return the updated document
+            { new: true } 
         );
 
         if (!updatedPractitioner) {

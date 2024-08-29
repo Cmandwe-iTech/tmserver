@@ -4,9 +4,8 @@ const successStorySchema = new mongoose.Schema({
     category: { type: String },
     name: { type: String },
     storyDesc: { type: String },
-    points: { type: String },      //saperated by commas
+    points: { type: String }, 
     profilePic: { type: String }
-
 });
 
 const successStoryModel = mongoose.model('successStoryData', successStorySchema);

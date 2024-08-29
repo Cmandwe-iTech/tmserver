@@ -2,14 +2,20 @@ import ourPartenerModel from '../../latestModel/ourPartner/ourPartener.js';
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
     }
 };
 
@@ -35,7 +41,6 @@ export const createOurPartenerData = async (req, res) => {
     }
 };
 
-// Get all our partener data
 export const getOurPartenerData = async (req, res) => {
     try {
         const pages = await ourPartenerModel.find().sort({ createdAt: -1 });
@@ -45,7 +50,6 @@ export const getOurPartenerData = async (req, res) => {
     }
 };
 
-// Delete our partener data by ID
 export const deleteOurPartenerDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -57,7 +61,6 @@ export const deleteOurPartenerDataById = async (req, res) => {
     }
 };
 
-// Get our partener data by company name
 export const getOurPartenerDataByCompanyName = async (req, res) => {
     try {
         const { companyName } = req.query;
@@ -67,8 +70,6 @@ export const getOurPartenerDataByCompanyName = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-// Edit our partener data by ID
 
 export const editOurPartenerData = async (req, res) => {
     try {

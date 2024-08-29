@@ -1,6 +1,5 @@
 import consultingFormModel from "../../latestModel/contactUs/consultingForm.js";
 
-
 export const createConsultingFormData = async (req, res) => {
     try {
         const { name, email, phoneNo } = req.body;
@@ -18,7 +17,6 @@ export const createConsultingFormData = async (req, res) => {
     }
 };
 
-// Get all consulting form data
 export const getConsultingFormData = async (req, res) => {
     try {
         const forms = await consultingFormModel.find().sort({ createdAt: -1 });
@@ -28,7 +26,6 @@ export const getConsultingFormData = async (req, res) => {
     }
 };
 
-// Delete consulting form data by ID
 export const deleteConsultingFormDataById = async (req, res) => {
     try {
         const { id } = req.params;

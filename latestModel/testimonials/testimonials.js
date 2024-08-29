@@ -6,7 +6,7 @@ const testimonialsSchema = new mongoose.Schema({
     profilePic: { type: String },
     position: { type: String },
     review: { type: String },
-    reviewPoints: { type: String }, // saperated  by commas
+    reviewPoints: { type: String },
     reviewVideo: { type: String }
 
 });

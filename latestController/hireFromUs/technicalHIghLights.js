@@ -4,9 +4,21 @@ import hireFromTechnicalHighlightsModel from '../../latestModel/hirefromUs/techn
 
 // Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
-    const result = await cloudinary.v2.uploader.upload(filePath);
-    fs.unlinkSync(filePath); // Remove the file from the server after uploading
-    return result.secure_url;
+    try {
+        const result = await cloudinary.v2.uploader.upload(filePath);
+        // Use unlink (async) instead of unlinkSync and provide a callback
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
+        return result.secure_url;
+    } catch (error) {
+        console.error('Error uploading to Cloudinary:', error);
+        throw error; // Rethrow the error to be handled by the caller
+    }
 };
 
 // Create a new technical highlight

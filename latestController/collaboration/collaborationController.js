@@ -15,7 +15,6 @@ export const createCollaborationData = async (req, res) => {
     }
 };
 
-// Get all collaboration data
 export const getCollaborationData = async (req, res) => {
     try {
         const pages = await collaborationModel.find().sort({ createdAt: -1 });
@@ -25,7 +24,6 @@ export const getCollaborationData = async (req, res) => {
     }
 };
 
-// Delete collaboration data by ID
 export const deleteCollaborationDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -37,7 +35,6 @@ export const deleteCollaborationDataById = async (req, res) => {
     }
 };
 
-// Get collaboration data by category
 export const getCollaborationDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -48,7 +45,6 @@ export const getCollaborationDataByCategory = async (req, res) => {
     }
 };
 
-// Edit collaboration data by ID
 export const editCollaborationDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -57,7 +53,6 @@ export const editCollaborationDataById = async (req, res) => {
             cName: req.body.cName,
             cCity: req.body.cCity
         };
-
         const page = await collaborationModel.findByIdAndUpdate(id, updatedData, { new: true });
         if (!page) return res.status(404).json({ error: 'Collaboration data not found' });
         res.status(200).json({ message: 'Collaboration data updated successfully', page });

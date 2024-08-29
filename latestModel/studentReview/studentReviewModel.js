@@ -6,7 +6,7 @@ const studentReviewSchema = new mongoose.Schema({
     jobRole: { type: String },
     companyName: { type: String },
     review: { type: String },
-    importantPoints: { type: String },// separated by comma
+    importantPoints: { type: String },
 });
 const studentReviewModel = mongoose.model('studentReviewData', studentReviewSchema);
 export default studentReviewModel;

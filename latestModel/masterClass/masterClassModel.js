@@ -2,12 +2,13 @@ import mongoose from 'mongoose';
 
 const masterClassSchema = new mongoose.Schema({
     category: { type: String },
+    masterClassRegisterLink: { type: String },
     cardData: {
         masterClassTitle: { type: String },
         masterClassSubTitle: { type: String },
         startDate: { type: String },
         endDate: { type: String },
-        time:{type:String},
+        time: { type: String },
         venue: { type: String },
         whatYouWillGain: [],
         mentorData: {
@@ -21,7 +22,7 @@ const masterClassSchema = new mongoose.Schema({
         },
         masterClassFor: {
             title: { type: String },
-            Icon: { type: String }  
+            Icon: { type: String }
         }
     }
 });

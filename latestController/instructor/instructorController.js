@@ -2,14 +2,20 @@ import instructorModel from '../../latestModel/instructor/instructorModel.js';
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error; 
     }
 };
 
@@ -43,7 +49,6 @@ export const createInstructorData = async (req, res) => {
     }
 };
 
-// Get all instructor data
 export const getInstructorData = async (req, res) => {
     try {
         const pages = await instructorModel.find().sort({ createdAt: -1 });
@@ -53,7 +58,6 @@ export const getInstructorData = async (req, res) => {
     }
 };
 
-// Delete instructor data by ID
 export const deleteInstructorDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -65,7 +69,6 @@ export const deleteInstructorDataById = async (req, res) => {
     }
 };
 
-// Get instructor data by category
 export const getInstructorDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;

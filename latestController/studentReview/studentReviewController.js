@@ -2,14 +2,20 @@ import studentReviewModel from '../../latestModel/studentReview/studentReviewMod
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
     }
 };
 
@@ -40,7 +46,6 @@ export const createStudentReviewData = async (req, res) => {
     }
 };
 
-// Get all student review data
 export const getStudentReviewData = async (req, res) => {
     try {
         const reviews = await studentReviewModel.find().sort({ createdAt: -1 });
@@ -50,7 +55,6 @@ export const getStudentReviewData = async (req, res) => {
     }
 };
 
-// Delete student review data by ID
 export const deleteStudentReviewDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -62,7 +66,6 @@ export const deleteStudentReviewDataById = async (req, res) => {
     }
 };
 
-// Get student review data by category
 export const getStudentReviewDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -77,19 +80,15 @@ export const editStudentReviewDataById = async (req, res) => {
     try {
         const { id } = req.params;
         const { category, studentName, jobRole, companyName, review, importantPoints } = req.body;
-
-        // Fetch existing review data
         const existingReview = await studentReviewModel.findById(id);
         if (!existingReview) return res.status(404).json({ message: 'Student review not found' });
 
-        // Handle profile picture upload if a new file is provided
-        let profilePic = existingReview.profilePic; // Default to existing profile picture
+        let profilePic = existingReview.profilePic; 
         if (req.files && req.files.profilePic) {
             const profilePicUrl = await uploadToCloudinary(req.files.profilePic[0].path);
             profilePic = profilePicUrl;
         }
 
-        // Update review data
         const studentReview = await studentReviewModel.findByIdAndUpdate(
             id,
             {

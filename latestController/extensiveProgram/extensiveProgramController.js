@@ -2,13 +2,21 @@ import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs'
 import extensiveProgramModel from '../../latestModel/extensiveProgram/extensiveProgramModel.js';
 
-
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
-    console.log(filePath, "filepath");
-    const result = await cloudinary.v2.uploader.upload(filePath);
-    fs.unlinkSync(filePath);
-    return result.secure_url;
+    try {
+        const result = await cloudinary.v2.uploader.upload(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
+        return result.secure_url;
+    } catch (error) {
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
+    }
 };
 
 export const createExtensiveProgram = async (req, res) => {
@@ -22,7 +30,6 @@ export const createExtensiveProgram = async (req, res) => {
             parseHeaderData = typeof headerData === 'string' ? JSON.parse(headerData) : headerData;
             parseHighlights = typeof highlights === 'string' ? JSON.parse(highlights) : highlights;
             parseCourseCurriculam = typeof courseCurriculam === 'string' ? JSON.parse(courseCurriculam) : courseCurriculam;
-            // parseSkillYouLearn = typeof skillYouLearn === 'string' ? JSON.parse(skillYouLearn) : skillYouLearn;
             parseTopInDemandTools = typeof topInDemandTools === 'string' ? JSON.parse(topInDemandTools) : topInDemandTools;
             parseFeesStuctures = typeof FeesStuctures === 'string' ? JSON.parse(FeesStuctures) : FeesStuctures;
         } catch (error) {
@@ -65,9 +72,6 @@ export const createExtensiveProgram = async (req, res) => {
     }
 };
 
-
-
-
 export const getAllExtensiveProgram = async (req, res) => {
     try {
         const pages = await extensiveProgramModel.find();
@@ -101,16 +105,10 @@ export const getExtensiveProgramById = async (req, res) => {
 export const deleteExtensiveProgramPage = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Find the document by ID
         const page = await extensiveProgramModel.findById(id);
-
-        // If document does not exist, return 404
         if (!page) return res.status(404).json({ error: 'Extensive program Page not found' });
-
-        // Delete the document
         await extensiveProgramModel.findByIdAndDelete(id);
-
+        
         res.status(200).json({ message: 'Extensive program Page deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -120,7 +118,16 @@ export const deleteExtensiveProgramPage = async (req, res) => {
 export const updateExtensiveProgram = async (req, res) => {
     try {
         const { id } = req.params;
-        const { Category, cardData, headerData, highlights, courseCurriculam, skillYouLearn, topInDemandTools, FeesStuctures } = req.body;
+        const {
+            Category,
+            cardData,
+            headerData,
+            highlights,
+            courseCurriculam,
+            skillYouLearn,
+            topInDemandTools,
+            FeesStuctures
+        } = req.body;
 
         let parseCardData, parseHeaderData, parseHighlights, parseCourseCurriculam, parseTopInDemandTools, parseFeesStuctures;
 
@@ -135,6 +142,13 @@ export const updateExtensiveProgram = async (req, res) => {
             return res.status(400).json({ message: 'Invalid JSON format in request body', error: error.message });
         }
 
+        // Fetch the existing program data
+        const existingProgram = await extensiveProgramModel.findById(id);
+
+        if (!existingProgram) {
+            return res.status(404).json({ message: 'Program not found' });
+        }
+
         const handleFileUploads = async (fileKey, targetArray, propertyToUpdate) => {
             if (req.files && req.files[fileKey]) {
                 for (let i = 0; i < req.files[fileKey].length; i++) {
@@ -147,20 +161,24 @@ export const updateExtensiveProgram = async (req, res) => {
             }
         };
 
+        // Handle file uploads
         await handleFileUploads('headerImage', [parseHeaderData], "headerBgImage");
-        await handleFileUploads('highlightsIcon', parseHighlights.highlightPoints, "icon");
+        await handleFileUploads('highlightsIcon', parseHighlights ? parseHighlights.highlightPoints : [], "icon");
         await handleFileUploads('topInDemandToolsLogo', parseTopInDemandTools, "logo");
 
-        const updatedProgram = await extensiveProgramModel.findByIdAndUpdate(id, {
-            Category,
-            cardData: parseCardData,
-            headerData: parseHeaderData,
-            highlights: parseHighlights,
-            courseCurriculam: parseCourseCurriculam,
-            skillYouLearn,
-            topInDemandTools: parseTopInDemandTools,
-            FeesStuctures: parseFeesStuctures,
-        }, { new: true });
+        // Prepare update data by merging with existing fields
+        const updateData = {
+            Category: Category || existingProgram.Category,
+            cardData: parseCardData || existingProgram.cardData,
+            headerData: parseHeaderData || existingProgram.headerData,
+            highlights: parseHighlights || existingProgram.highlights,
+            courseCurriculam: parseCourseCurriculam || existingProgram.courseCurriculam,
+            skillYouLearn: skillYouLearn || existingProgram.skillYouLearn,
+            topInDemandTools: parseTopInDemandTools || existingProgram.topInDemandTools,
+            FeesStuctures: parseFeesStuctures || existingProgram.FeesStuctures
+        };
+
+        const updatedProgram = await extensiveProgramModel.findByIdAndUpdate(id, updateData, { new: true });
 
         res.status(200).json({ message: 'Extensive program updated', updatedProgram });
 

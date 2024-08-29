@@ -2,19 +2,20 @@ import testimonialsModel from '../../latestModel/testimonials/testimonials.js';
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
-        console.log("Uploading to Cloudinary: ", filePath);
-        const result = await cloudinary.v2.uploader.upload(filePath, {
-            resource_type: "auto" // Auto-detect the file type (video, image, etc.)
+        const result = await cloudinary.v2.uploader.upload(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
         });
-        console.log("Upload successful: ", result.secure_url);
-        fs.unlinkSync(filePath); // remove file from local storage after uploading
         return result.secure_url;
     } catch (error) {
-        console.error(`Error uploading file to Cloudinary: ${error.message}`);
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
     }
 };
 
@@ -49,7 +50,6 @@ export const createTestimonialsData = async (req, res) => {
     }
 };
 
-// Get all testimonials data
 export const getTestimonialsData = async (req, res) => {
     try {
         const testimonials = await testimonialsModel.find().sort({ createdAt: -1 });
@@ -59,7 +59,6 @@ export const getTestimonialsData = async (req, res) => {
     }
 };
 
-// Delete testimonial data by ID
 export const deleteTestimonialsDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -71,7 +70,6 @@ export const deleteTestimonialsDataById = async (req, res) => {
     }
 };
 
-// Get testimonials data by category
 export const getTestimonialsDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -82,22 +80,14 @@ export const getTestimonialsDataByCategory = async (req, res) => {
     }
 };
 
-// Update testimonial data by ID
 export const updateTestimonialsData = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Fetch the existing testimonial data
         const existingTestimonial = await testimonialsModel.findById(id);
         if (!existingTestimonial) return res.status(404).json({ error: 'Testimonial not found' });
-
         const { category, studentName, position, review, reviewPoints } = req.body;
-
-        // Initialize variables for new data
         let reviewVideo = existingTestimonial.reviewVideo;
         let profilePic = existingTestimonial.profilePic;
-
-        // Check if new files are uploaded and update them accordingly
         if (req.files && req.files.reviewVideo) {
             const reviewVideoUrl = await uploadToCloudinary(req.files.reviewVideo[0].path);
             reviewVideo = reviewVideoUrl;
@@ -108,7 +98,6 @@ export const updateTestimonialsData = async (req, res) => {
             profilePic = profilePicUrl;
         }
 
-        // Merge new data with existing data
         const updatedData = {
             category: category || existingTestimonial.category,
             studentName: studentName || existingTestimonial.studentName,
@@ -119,7 +108,6 @@ export const updateTestimonialsData = async (req, res) => {
             reviewVideo
         };
 
-        // Update the testimonial in the database
         const testimonial = await testimonialsModel.findByIdAndUpdate(id, updatedData, { new: true });
 
         res.status(200).json({ message: 'Testimonial data updated successfully', testimonial });

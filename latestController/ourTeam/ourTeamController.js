@@ -2,14 +2,20 @@ import ourTeamModel from '../../latestModel/ourTeam/ourTeamModel.js';
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
     }
 };
 
@@ -36,7 +42,6 @@ export const createOurTeamData = async (req, res) => {
     }
 };
 
-// Get all our team data
 export const getOurTeamData = async (req, res) => {
     try {
         const pages = await ourTeamModel.find().sort({ createdAt: -1 });
@@ -46,7 +51,6 @@ export const getOurTeamData = async (req, res) => {
     }
 };
 
-// Delete our team data by ID
 export const deleteOurTeamDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -58,7 +62,6 @@ export const deleteOurTeamDataById = async (req, res) => {
     }
 };
 
-// Get our team data by member name
 export const getOurTeamDataByMemberName = async (req, res) => {
     try {
         const { memberName } = req.query;

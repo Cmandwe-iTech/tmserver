@@ -3,14 +3,20 @@ import certificateModel from '../../latestModel/certificate/cerrtificateModel.js
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error; 
     }
 };
 
@@ -43,10 +49,6 @@ export const createCertificateData = async (req, res) => {
     }
 };
 
-// ... other controller methods remain the same
-
-
-// Get all certificate data
 export const getCertificateData = async (req, res) => {
     try {
         const pages = await certificateModel.find().sort({ createdAt: -1 });
@@ -56,7 +58,6 @@ export const getCertificateData = async (req, res) => {
     }
 };
 
-// Delete certificate data by ID
 export const deleteCertificateDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -68,7 +69,6 @@ export const deleteCertificateDataById = async (req, res) => {
     }
 };
 
-// Get certificate data by category
 export const getCertificateDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -83,26 +83,17 @@ export const editCertificateDataById = async (req, res) => {
     try {
         const { id } = req.params;
         const { category, rankDetails } = req.body;
-
-        // Parse rankDetails from JSON
         const parsedRankDetails = JSON.parse(rankDetails || '[]');
-
-        // Fetch the existing certificate data
         const existingData = await certificateModel.findById(id);
         if (!existingData) {
             return res.status(404).json({ message: 'Certificate not found' });
         }
-
-        // Initialize certificateImageUrl to the existing image URL
         let certificateImageUrl = existingData.certificateImage;
-
-        // Check if a new image is provided
         if (req.file) {
             console.log('New image detected, uploading...');
             try {
-                // Upload new image and get the URL
                 const uploadResult = await uploadToCloudinary(req.file.path);
-                certificateImageUrl = uploadResult; // Update with the new image URL
+                certificateImageUrl = uploadResult; 
                 console.log('New image uploaded successfully:', certificateImageUrl);
             } catch (uploadError) {
                 console.error('Error uploading new image:', uploadError);
@@ -112,16 +103,12 @@ export const editCertificateDataById = async (req, res) => {
             console.log('No new image provided, retaining existing image.');
         }
 
-        // Prepare the update data
         const updateData = {
             category: category || existingData.category,
             rankDetails: parsedRankDetails || existingData.rankDetails,
-            certificateImage: certificateImageUrl, // Set the image URL (new or existing)
+            certificateImage: certificateImageUrl,
         };
-
-        // Update the certificate data
         const updatedCertificate = await certificateModel.findByIdAndUpdate(id, updateData, { new: true });
-        
         res.status(200).json({ message: 'Certificate updated successfully', certificatePage: updatedCertificate });
     } catch (error) {
         console.error('Error updating certificate data:', error);

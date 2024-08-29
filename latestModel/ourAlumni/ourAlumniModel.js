@@ -8,7 +8,6 @@ const ourAlumniSchema = new mongoose.Schema({
     companyName: { type: String },
     companyCity: { type: String },
     companyLogo: { type: String }
-
 });
 
 const ourAlumniModel = mongoose.model('ourAlumniData', ourAlumniSchema);

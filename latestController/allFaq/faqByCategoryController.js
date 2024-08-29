@@ -9,7 +9,6 @@ export const createFaqByCategoryData = async (req, res) => {
             question,
             answer
         });
-
         await faq.save();
         res.status(201).json({ message: 'FAQ by category data added successfully', faq });
     } catch (error) {
@@ -17,7 +16,6 @@ export const createFaqByCategoryData = async (req, res) => {
     }
 };
 
-// Get all FAQ by category data
 export const getFaqByCategoryData = async (req, res) => {
     try {
         const faqs = await faqByCategoryModel.find().sort({ category: 1, question: 1 });
@@ -27,7 +25,6 @@ export const getFaqByCategoryData = async (req, res) => {
     }
 };
 
-// Delete FAQ by category data by ID
 export const deleteFaqByCategoryDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -39,7 +36,6 @@ export const deleteFaqByCategoryDataById = async (req, res) => {
     }
 };
 
-// Get FAQ by category data by category
 export const getFaqByCategoryDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -49,7 +45,6 @@ export const getFaqByCategoryDataByCategory = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 export const editFaqByCategoryDataById = async (req, res) => {
     try {

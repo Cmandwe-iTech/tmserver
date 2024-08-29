@@ -20,7 +20,6 @@ export const createContactUsFormData = async (req, res) => {
     }
 };
 
-// Get all Contact Us form data
 export const getContactUsFormData = async (req, res) => {
     try {
         const forms = await contactUsormModel.find().sort({ createdAt: -1 });
@@ -30,7 +29,6 @@ export const getContactUsFormData = async (req, res) => {
     }
 };
 
-// Delete Contact Us form data by ID
 export const deleteContactUsFormDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -42,7 +40,6 @@ export const deleteContactUsFormDataById = async (req, res) => {
     }
 };
 
-// Get Contact Us form data by name
 export const getContactUsFormDataByName = async (req, res) => {
     try {
         const { name } = req.query;
@@ -53,7 +50,6 @@ export const getContactUsFormDataByName = async (req, res) => {
     }
 };
 
-// Get Contact Us form data by email
 export const getContactUsFormDataByEmail = async (req, res) => {
     try {
         const { email } = req.query;
@@ -64,7 +60,6 @@ export const getContactUsFormDataByEmail = async (req, res) => {
     }
 };
 
-// Get Contact Us form data by phone number
 export const getContactUsFormDataByPhoneNo = async (req, res) => {
     try {
         const { phoneNo } = req.query;
@@ -75,7 +70,6 @@ export const getContactUsFormDataByPhoneNo = async (req, res) => {
     }
 };
 
-// Get Contact Us form data by currently pursuing
 export const getContactUsFormDataByCurrentlyPursing = async (req, res) => {
     try {
         const { currentlyPursing } = req.query;
@@ -86,7 +80,6 @@ export const getContactUsFormDataByCurrentlyPursing = async (req, res) => {
     }
 };
 
-// Get Contact Us form data by year
 export const getContactUsFormDataByYear = async (req, res) => {
     try {
         const { year } = req.query;
@@ -97,7 +90,6 @@ export const getContactUsFormDataByYear = async (req, res) => {
     }
 };
 
-// Get Contact Us form data by course chosen with TM
 export const getContactUsFormDataByCourseChooseWithTM = async (req, res) => {
     try {
         const { courseChooseWithTM } = req.query;

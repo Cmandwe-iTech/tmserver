@@ -1,17 +1,15 @@
 import multer from "multer";
 import path from "path";
 
-// Set up storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Specify the destination directory
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Generate a unique filename
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
-// Improved file filter for handling multiple file types including videos
 const fileFilter = (req, file, cb) => {
   const filetypes = /mp4|mov|avi|mkv|wmv|flv|jpeg|jpg|png|gif|pdf|docx/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -28,10 +26,9 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Set up multer configuration with storage and limits
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 100000000 }, // Limit file size to 100MB or adjust as needed
+  limits: { fileSize: 10000000000 }, // Limit file size to 100MB or adjust as needed
   fileFilter: fileFilter
 });
 

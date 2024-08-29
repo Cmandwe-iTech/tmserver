@@ -1,8 +1,6 @@
 import contactUsModel from "../../latestModel/contactUs/contactUsPageModel.js";
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs'
-// Cloudinary configuration
-
 
 export const createContactUsData = async (req, res) => {
   try {

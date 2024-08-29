@@ -2,14 +2,20 @@ import creatorModel from '../../latestModel/creator/creatorModel.js';
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
     }
 };
 
@@ -43,7 +49,6 @@ export const createCreatorData = async (req, res) => {
     }
 };
 
-// Get all creator data
 export const getCreatorData = async (req, res) => {
     try {
         const pages = await creatorModel.find().sort({ createdAt: -1 });
@@ -53,7 +58,6 @@ export const getCreatorData = async (req, res) => {
     }
 };
 
-// Delete creator data by ID
 export const deleteCreatorDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -65,7 +69,6 @@ export const deleteCreatorDataById = async (req, res) => {
     }
 };
 
-// Get creator data by category
 export const getCreatorDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;

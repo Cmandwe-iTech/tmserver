@@ -3,19 +3,18 @@ import hireFromModel from '../../latestModel/hirefromUs/hirefromModel.js';
 
 export const createHireFrom = async (req, res) => {
     try {
-        const { 
-            category, 
-            ProfessionalSpokenEnglishTrainingSession, 
-            AptitudeTestAndLogicalReasoningCriticalThinking, 
-            MindsetBatchForGrowthInCareer, 
-            inventoryAvailable 
+        const {
+            category,
+            ProfessionalSpokenEnglishTrainingSession,
+            AptitudeTestAndLogicalReasoningCriticalThinking,
+            MindsetBatchForGrowthInCareer,
+            inventoryAvailable
         } = req.body;
 
-        // Parse inventoryAvailable if it's provided as a JSON string
         let parsedInventoryAvailable = [];
         if (inventoryAvailable) {
-            parsedInventoryAvailable = typeof inventoryAvailable === 'string' 
-                ? JSON.parse(inventoryAvailable) 
+            parsedInventoryAvailable = typeof inventoryAvailable === 'string'
+                ? JSON.parse(inventoryAvailable)
                 : inventoryAvailable;
         }
 
@@ -36,8 +35,6 @@ export const createHireFrom = async (req, res) => {
     }
 };
 
-
-// Get all hireFrom entries
 export const getHireFrom = async (req, res) => {
     try {
         const hireFromData = await hireFromModel.find();
@@ -47,7 +44,6 @@ export const getHireFrom = async (req, res) => {
     }
 };
 
-// Get a hireFrom entry by ID
 export const getHireFromById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -58,7 +54,7 @@ export const getHireFromById = async (req, res) => {
         res.status(500).json({ message: 'Error retrieving Hire From data', error: error.message });
     }
 };
-// Get a hireFrom entry by ID
+
 export const getHireFromByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -82,8 +78,8 @@ export const updateHireFrom = async (req, res) => {
 
         let parsedInventoryAvailable = [];
         if (inventoryAvailable) {
-            parsedInventoryAvailable = typeof inventoryAvailable === 'string' 
-                ? JSON.parse(inventoryAvailable) 
+            parsedInventoryAvailable = typeof inventoryAvailable === 'string'
+                ? JSON.parse(inventoryAvailable)
                 : inventoryAvailable;
         }
 

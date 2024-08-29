@@ -2,14 +2,20 @@ import successStoryModel from '../../latestModel/successStory/successStoryModel.
 import cloudinary from '../../middlware/cloudinary.js';
 import fs from 'fs';
 
-// Helper function to upload files to Cloudinary
 const uploadToCloudinary = async (filePath) => {
     try {
         const result = await cloudinary.v2.uploader.upload(filePath);
-        fs.unlinkSync(filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`Error deleting file: ${filePath}`, err);
+            } else {
+                console.log(`Successfully deleted file: ${filePath}`);
+            }
+        });
         return result.secure_url;
     } catch (error) {
-        throw new Error(`Error uploading file to Cloudinary: ${error.message}`);
+        console.error('Error uploading to Cloudinary:', error);
+        throw error;
     }
 };
 
@@ -38,7 +44,6 @@ export const createSuccessStoryData = async (req, res) => {
     }
 };
 
-// Get all success story data
 export const getSuccessStoryData = async (req, res) => {
     try {
         const stories = await successStoryModel.find().sort({ createdAt: -1 });
@@ -48,7 +53,6 @@ export const getSuccessStoryData = async (req, res) => {
     }
 };
 
-// Delete success story data by ID
 export const deleteSuccessStoryDataById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -60,7 +64,6 @@ export const deleteSuccessStoryDataById = async (req, res) => {
     }
 };
 
-// Get success story data by category
 export const getSuccessStoryDataByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -71,27 +74,19 @@ export const getSuccessStoryDataByCategory = async (req, res) => {
     }
 };
 
-// Edit success story data by ID
 export const editSuccessStoryDataById = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Fetch the existing success story data
         const existingStory = await successStoryModel.findById(id);
         if (!existingStory) return res.status(404).json({ error: 'Success story not found' });
 
         const { category, name, storyDesc, points } = req.body;
-
-        // Initialize the profilePic with the existing value
         let profilePic = existingStory.profilePic;
 
-        // Check if a new profilePic file is uploaded and update it
         if (req.files && req.files.profilePic) {
             const profilePicUrl = await uploadToCloudinary(req.files.profilePic[0].path);
             profilePic = profilePicUrl;
         }
-
-        // Merge new data with existing data
         const updatedData = {
             category: category || existingStory.category,
             name: name || existingStory.name,
@@ -100,7 +95,6 @@ export const editSuccessStoryDataById = async (req, res) => {
             profilePic
         };
 
-        // Update the success story in the database
         const updatedStory = await successStoryModel.findByIdAndUpdate(id, updatedData, { new: true });
 
         res.status(200).json({ message: 'Success story data updated successfully', updatedStory });

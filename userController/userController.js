@@ -13,7 +13,7 @@ export const register = async (req, res) => {
       const newuser = new userModel({
         email,
         phone,
-        password: hash, // Store the hashed password
+        password: hash,
         role,
       });
       const userSave = await newuser.save();
@@ -35,11 +35,12 @@ export const login = async (req, res) => {
       return res.status(400).send("User does not exist, please sign up first");
     } else {
       const match = await compare(password, user.password);
-      console.log(match)
       if (match) {
         const token = await user.generatetoken();
         res.status(200).send({ token, user });
         console.log(token);
+      }else{
+      return res.status(400).send({message:"plz check your credentials"});
       }
     }
   } catch (error) {
@@ -57,12 +58,10 @@ export const editUser = async (req, res) => {
     if (!userDataById) {
       return res.status(404).json({ error: "user not found" });
     }
-    // update the user data
     userDataById.email = email || userDataById.email;
     userDataById.phone = phone || userDataById.phone;
     userDataById.password = hash || userDataById.password;
     userDataById.role = role || userDataById.role;
-    // Save the updated users
     await userDataById.save();
 
     res.status(200).send({message:"user details updated successfully",userDataById});
@@ -91,3 +90,13 @@ export const deleteUser = async (req, res) => {
     res.status(500).send({ message: error.message });
   }
 };
+
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie('token');
+    res.status(200).send({ message: "User logged out successfully" });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+

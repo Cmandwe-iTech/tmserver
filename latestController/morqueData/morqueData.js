@@ -1,6 +1,5 @@
-import morqueDataModel from '../../latestModel/morqueModel/morqueModel.js'; // Adjust the path to your model
+import morqueDataModel from '../../latestModel/morqueModel/morqueModel.js'; 
 
-// Create a new morqueData entry
 export const createMorqueData = async (req, res) => {
   try {
     const morqueData = new morqueDataModel(req.body);
@@ -11,7 +10,6 @@ export const createMorqueData = async (req, res) => {
   }
 };
 
-// Get all morqueData entries
 export const getAllMorqueData = async (req, res) => {
   try {
     const morqueData = await morqueDataModel.find();
@@ -21,7 +19,6 @@ export const getAllMorqueData = async (req, res) => {
   }
 };
 
-// Get a single morqueData entry by ID
 export const getMorqueDataById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -34,7 +31,7 @@ export const getMorqueDataById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-// Get a single morqueData entry by ID
+
 export const getMorqueDataByCategory = async (req, res) => {
   try {
     const { category } = req.params;
@@ -48,7 +45,6 @@ export const getMorqueDataByCategory = async (req, res) => {
   }
 };
 
-// Update a morqueData entry by ID
 export const updateMorqueData = async (req, res) => {
   try {
     const { id } = req.params;
@@ -62,7 +58,6 @@ export const updateMorqueData = async (req, res) => {
   }
 };
 
-// Delete a morqueData entry by ID
 export const deleteMorqueData = async (req, res) => {
   try {
     const { id } = req.params;
